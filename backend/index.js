@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 
 import { connectDB } from './config/db.js'
+import userRoutes from './routes/userRoutes.js'
 
 // Configuration
 dotenv.config()
@@ -19,7 +20,7 @@ app.use(cookieParser())
 const PORT = process.env.VITE_PORT || 5000
 
 // Routes
-
+app.use('/api/users', userRoutes)
 
 // Connect to Server
 app.listen(PORT, () => {
