@@ -12,6 +12,10 @@ export default function Navigation() {
     const navigate = useNavigate()
 
     const [loginApiCall] = useLoginMutation()
+
+    const logoutHandler = () => {
+
+    }
   return (
     <div>
         <div className="flex flex-row justify-center gap-10">
@@ -42,7 +46,7 @@ export default function Navigation() {
                 </>
             )}
 
-            {userInfo && userInfo.isAdmin (
+            {userInfo && userInfo.isAdmin && (
                 <>
                     Admin
                 </>
