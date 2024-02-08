@@ -1,8 +1,15 @@
-import React from 'react'
+import { Outlet } from "react-router"
+import { ToastContainer } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 export default function App() {
   return (
-    <div className="text-3xl font-bold underline">App</div>
+    <>
+      <ToastContainer />
+      <main className="py-3">
+        <Outlet />
+      </main>
+    </>
   )
 }
 
