@@ -112,6 +112,18 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
         res.status(404)
         throw new Error('User not found')
     }
+});
+
+export const deleteUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.params.id)
+
+    if (user) {
+        await User.deleteOne({ _id: user._id })
+        res.json({ message: 'User successfully deleted' })
+    } else {
+        res.status(404)
+        throw new Error('User not found')
+    }
 })
 
 
