@@ -2,7 +2,7 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { useNavigate } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
-import { useLoginMutation } from "../pages/redux/api/usersSlice.js"
+import { useLogoutMutation } from "../pages/redux/api/usersSlice.js"
 import { logout } from "../pages/redux/features/auth/authSlice.js"
 
 export default function Navigation() {
@@ -11,10 +11,16 @@ export default function Navigation() {
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
-    const [loginApiCall] = useLoginMutation()
+    const [logoutApiCall] = useLogoutMutation()
 
-    const logoutHandler = () => {
-
+    const logoutHandler = async () => {
+        try {
+            await logoutApiCall().unwrap()
+            dispatch(logout())
+            navigate('/login')
+        } catch (error) {
+            console.error(error)
+        }
     }
   return (
     <div>
