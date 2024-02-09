@@ -119,6 +119,10 @@ export const deleteUser = asyncHandler(async (req, res) => {
 
     if (user) {
         await User.deleteOne({ _id: user._id })
+        res.cookie('jwt', '', {
+            httpOnly: true,
+            expires: new Date(0)
+        })
         res.json({ message: 'User successfully deleted' })
     } else {
         res.status(404)

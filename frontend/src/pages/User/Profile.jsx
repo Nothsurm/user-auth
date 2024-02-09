@@ -2,24 +2,29 @@ import { useEffect, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { toast } from 'react-toastify'
 import { setCredentials } from "../redux/features/auth/authSlice"
-import { useProfileMutation } from "../redux/api/usersSlice"
+import { useProfileMutation, useDeleteProfileMutation } from "../redux/api/usersSlice"
+import { useNavigate } from "react-router"
+import { logout } from "../redux/features/auth/authSlice"
 
 export default function Profile() {
     const [username, setUsername] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
+    const [showModal, setShowModal] = useState(false)
 
     const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const {userInfo} = useSelector((state) => state.auth)
 
-    const [updateProfile, {isLoading}] = useProfileMutation()
+    const [updateProfile, {isLoading: updateLoading}] = useProfileMutation()
+    const [deleteProfile, {isLoading: deleteLoading}] = useDeleteProfileMutation()
 
     useEffect(() => {
         setUsername(userInfo.username)
         setEmail(userInfo.email)
-    }, [userInfo.email, userInfo.password])
+    }, [userInfo.email, userInfo.username])
 
     const submitHandler = async (e) => {
         e.preventDefault()
@@ -46,8 +51,20 @@ export default function Profile() {
                 dispatch(setCredentials({...res}))
                 toast.success('Profile updated successfully')
             } catch (err) {
-                toast.error(err?.data?.message || err.error)
+                toast.error(ejjjrr?.data?.message || err.error)
             }
+        }
+    }
+
+    const deleteUser = async (id) => {
+        //setShowModal(false)
+        try {
+            await deleteProfile(id)
+            dispatch(logout())
+            toast.success('You have been successfully deleted')
+            navigate('/register')
+        } catch (err) {
+            toast.error(err?.data?.message || err.error)
         }
     }
   return (
@@ -110,14 +127,29 @@ export default function Profile() {
                     </div>
                 </div>
                 <div className="flex justify-between">
-                    <button disabled={isLoading} type='submit' className="mt-5 bg-zinc-800 text-white p-2 rounded">
-                        {isLoading ? 'Updating...' : 'Update'}
-                    </button>
-                    <button className="mt-5 bg-red-800 text-white p-2 rounded">
-                        {isLoading ? 'Deleting...' : 'Delete'}
+                    <button disabled={updateLoading} type='submit' className="mt-5 bg-zinc-800 text-white p-2 rounded">
+                        {updateLoading ? 'Updating...' : 'Update'}
                     </button>
                 </div>
             </form>
+            <button 
+                disabled={deleteLoading} 
+                className="mt-5 bg-red-800 text-white p-2 rounded" 
+                onClick={() => 
+                    deleteUser(userInfo._id)
+                }
+            >
+                {deleteLoading ? 'Deleting...' : 'Delete'}
+            </button>
+            {/*{
+                showModal && (
+                    <>
+                            <h1>Are you sure you want to delete your account?</h1>
+                            <button onClick={() => deleteUser(userInfo._id)}>Delete</button>
+                            <button onClick={setShowModal(false)}>Cancel</button>
+                    </>
+                )
+            }*/}
         </div>
     </div>
   )
