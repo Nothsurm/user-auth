@@ -137,3 +137,29 @@ export const getAllUsers = asyncHandler(async (req, res) => {
     res.json(users)
 });
 
+//Reset Password
+export const forgotPassword = asyncHandler(async(req, res) => {
+    // Get user based on posted email
+    const user = await User.findOne({email: req.body.email})
+
+    if (!user) {
+        res.status(404)
+        throw new Error('We could not find the User with given email')
+    } else {
+    //Generated a random reset token
+        try {
+            const resetToken = user.createPasswordResetToken()
+            await user.save({validateBeforeSave: false})
+            res.status(200).json({resetToken})
+        } catch (error) {
+            res.status(401)
+            throw new Error(`${error.message}`)
+        }
+    }
+    //send the token back to the user email
+})
+
+export const resetPassword = asyncHandler(async(req, res) => {
+
+})
+

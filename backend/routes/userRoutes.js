@@ -1,5 +1,5 @@
 import express from 'express'
-import { createUser, loginUser, logoutUser, getAllUsers, getUserProfile, updateUserProfile, deleteUser } from '../controllers/userController.js';
+import { createUser, loginUser, logoutUser, getAllUsers, getUserProfile, updateUserProfile, deleteUser, forgotPassword, resetPassword } from '../controllers/userController.js';
 
 // Middlewares
 import { authenticate, authorizedAdmin } from '../middlewares/authMiddleware.js';
@@ -11,5 +11,9 @@ router.post('/auth', loginUser)
 router.post('/logout', logoutUser)
 router.route('/profile').get(authenticate, getUserProfile).put(authenticate, updateUserProfile)
 router.delete('/profile/:id',authenticate, deleteUser)
+
+//Forgot Password routes
+router.route('/forgotPassword').post(forgotPassword)
+router.route('/resetPassword').post(resetPassword)
 
 export default router;
