@@ -32,8 +32,10 @@ export default function Login() {
       const res = await login({ email, password }).unwrap()
       dispatch(setCredentials({...res}))
       navigate(redirect)
+      toast.success(`User successfully logged in`)
     } catch (err) {
       toast.error(err?.data?.message || err.error)
+      console.error(err)
     }
   }
 

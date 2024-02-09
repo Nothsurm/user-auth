@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { useSelector, useDispatch } from "react-redux"
 import { useLogoutMutation } from "../pages/redux/api/usersSlice.js"
 import { logout } from "../pages/redux/features/auth/authSlice.js"
+import { toast } from 'react-toastify'
 
 export default function Navigation() {
     const {userInfo} = useSelector((state) => state.auth)
@@ -18,7 +19,9 @@ export default function Navigation() {
             await logoutApiCall().unwrap()
             dispatch(logout())
             navigate('/login')
+            toast.success('User successfully logged out')
         } catch (error) {
+            toast.error(`${error.message}`)
             console.error(error)
         }
     }
