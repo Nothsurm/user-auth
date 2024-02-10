@@ -2,11 +2,14 @@ import { useState } from "react"
 import { useForgotPasswordMutation } from "../redux/api/usersSlice"
 import { toast } from "react-toastify"
 import { useNavigate } from "react-router"
+import { useDispatch } from "react-redux"
+import { getPasswordResetToken } from "../redux/features/auth/authSlice.js"
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('')
 
     const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     const [resetPassword, {isLoading}] = useForgotPasswordMutation()
 
@@ -14,7 +17,7 @@ export default function ForgotPassword() {
         e.preventDefault()
         try {
             const res = await resetPassword({email}).unwrap()
-            console.log(res);
+            dispatch(getPasswordResetToken({...res}))
             toast.success(`An email has been sent, please check your inbox`)
         } catch (err) {
             toast.error(err?.data?.message || err.error)

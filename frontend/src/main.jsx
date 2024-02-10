@@ -11,6 +11,7 @@ import Register from './pages/Auth/Register.jsx'
 import PrivateRoutes from './pages/Auth/PrivateRoutes.jsx'
 import Profile from './pages/User/Profile.jsx'
 import ForgotPassword from './pages/Auth/ForgotPassword.jsx'
+import ResetPassword from './pages/Auth/ResetPassword.jsx'
 
 const router = createBrowserRouter(
     createRoutesFromElements(
@@ -19,6 +20,8 @@ const router = createBrowserRouter(
             <Route path='/login' element={<Login />} />
             <Route path='/register' element={<Register />} />
             <Route path='/forgotPassword' element={<ForgotPassword />} />
+            <Route path='/resetPassword/:token' element={<ResetPassword />} />
+
 
 
         <Route path='' element={<PrivateRoutes />}>
