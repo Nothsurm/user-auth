@@ -2,6 +2,7 @@ import User from "../models/userModel.js";
 import bcrypt from 'bcryptjs'
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 import { generateToken } from '../utils/createToken.js';
+import { sendEmail } from "../utils/email.js";
 
 export const createUser = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body
@@ -145,18 +146,29 @@ export const forgotPassword = asyncHandler(async(req, res) => {
     if (!user) {
         res.status(404)
         throw new Error('We could not find the User with given email')
-    } else {
-    //Generated a random reset token
-        try {
-            const resetToken = user.createPasswordResetToken()
-            await user.save({validateBeforeSave: false})
-            res.status(200).json({resetToken})
-        } catch (error) {
-            res.status(401)
-            throw new Error(`${error.message}`)
-        }
-    }
+    } 
+
+    const resetToken = user.createPasswordResetToken()
+    await user.save({validateBeforeSave: false})
+
     //send the token back to the user email
+    const resetUrl= `${req.protocol}://${req.get('host')}/api/users/resetPassword/${resetToken}`
+    const message = `We have received a password reset request. Please use the link below to reset your password\n\n${resetUrl}\n\nThis password Link will be valid for only 10 minutes`
+    try {
+        await sendEmail({
+            email: user.email,
+            subject: 'Password change request',
+            message: message,
+        });
+
+        res.status(200).json({ message: 'Password reset link sent to the user' })
+    } catch (err) {
+        user.passwordResetToken = undefined
+        user.passwordResetTokenExpires = undefined
+        user.save({validateBeforeSave: false})
+
+        return err.message
+    }
 })
 
 export const resetPassword = asyncHandler(async(req, res) => {
