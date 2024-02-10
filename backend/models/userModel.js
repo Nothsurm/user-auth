@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import bcryptjs from 'bcryptjs'
 
 const userSchema = mongoose.Schema({
     username: {
@@ -29,12 +28,22 @@ const userSchema = mongoose.Schema({
 }, {timestamps: true});
 
 userSchema.methods.createPasswordResetToken = function(){
-    const resetToken = bcryptjs.hashSync(process.env.VITE_PASSWORD_RESET_TOKEN, 2).toString()
+    const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-    this.passwordResetToken = bcryptjs.hashSync(process.env.VITE_PASSWORD_RESET_TOKEN, 10).toString()
+    function resetToken(length) {
+        let result = '';
+        const charactersLength = characters.length;
+        for ( let i = 0; i < length; i++ ) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+
+        return result;
+    }
+
+    this.passwordResetToken = resetToken(10)
     this.passwordResetTokenExpires = Date.now() + 10 * 60 * 1000
 
-    return resetToken;
+    return this.passwordResetToken
 }
 
 const User = mongoose.model('User', userSchema)

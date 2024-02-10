@@ -172,6 +172,37 @@ export const forgotPassword = asyncHandler(async(req, res) => {
 })
 
 export const resetPassword = asyncHandler(async(req, res) => {
+    const user = await User.findOne({
+        passwordResetToken: req.params.token, 
+        passwordResetTokenExpires: {$gt: Date.now()}
+    })
+    console.log(user);
 
+    if (!user) {
+        res.status(403)
+        throw new Error('User not found, token expired!')
+    } else {
+        try {
+            user.password = req.body.password
+            user.confirmPassword = req.body.confirmPassword
+            user.passwordResetToken = undefined
+            user.passwordResetTokenExpires = undefined
+
+            user.save();
+
+            //Login user
+            generateToken(res, user._id)
+
+            res.status(200).json({
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                isAdmin: user.isAdmin
+            })
+        } catch (error) {
+            res.status(404)
+            throw new Error({ message: error.message})
+        }
+    }
 })
 
