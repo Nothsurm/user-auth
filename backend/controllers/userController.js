@@ -145,7 +145,7 @@ export const forgotPassword = asyncHandler(async(req, res) => {
 
     if (!user) {
         res.status(404)
-        throw new Error('We could not find the User with given email')
+        throw new Error('This Email hasnt been created')
     } 
 
     const resetToken = user.createPasswordResetToken()
