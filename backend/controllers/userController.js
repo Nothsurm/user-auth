@@ -164,7 +164,7 @@ export const forgotPassword = asyncHandler(async(req, res) => {
         res.status(200).json({
             _id: user._id,
             email: user.email,
-            passwordResetToken: resetToken,
+            //passwordResetToken: resetToken,
             passwordResetTokenExpires: user.passwordResetTokenExpires
         })
     } catch (err) {
@@ -181,29 +181,22 @@ export const resetPassword = asyncHandler(async(req, res) => {
         passwordResetToken: req.params.token, 
         passwordResetTokenExpires: {$gt: Date.now()}
     })
-    console.log(user);
 
     if (!user) {
         res.status(403)
         throw new Error('User not found, token expired!')
     } else {
         try {
-            user.password = req.body.password
-            user.confirmPassword = req.body.confirmPassword
+            const salt = await bcrypt.genSalt(10)
+            const hashedPassword = await bcrypt.hash(user.password, salt)
+
+            user.password = hashedPassword
             user.passwordResetToken = undefined
             user.passwordResetTokenExpires = undefined
 
-            user.save();
+            await user.save();
 
-            //Login user
-            generateToken(res, user._id)
-
-            res.status(200).json({
-                _id: user._id,
-                username: user.username,
-                email: user.email,
-                isAdmin: user.isAdmin
-            })
+            res.status(200).json({ message: 'Password updated successfully' })
         } catch (error) {
             res.status(404)
             throw new Error({ message: error.message})
