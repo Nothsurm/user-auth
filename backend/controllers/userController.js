@@ -1,8 +1,10 @@
 import User from "../models/userModel.js";
+import VerifyToken from "../models/verifyTokenModel.js";
 import bcrypt from 'bcryptjs'
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 import { generateToken } from '../utils/createToken.js';
-import { sendEmail } from "../utils/email.js";
+import { generateOTP, sendEmail } from "../utils/email.js";
+import { isValidObjectId } from "mongoose";
 
 export const createUser = asyncHandler(async (req, res) => {
     const { username, email, password } = req.body
@@ -23,21 +25,24 @@ export const createUser = asyncHandler(async (req, res) => {
         email, 
         password: hashedPassword
     })
-    
-    try {
+
+    const OTP = generateOTP()
+    const verificationToken = new VerifyToken({
+        owner: newUser._id,
+        token: OTP
+    })
+        await verificationToken.save()
         await newUser.save()
         generateToken(res, newUser._id)
 
-        res.status(200).json({
-            _id: newUser._id,
-            username: newUser.username,
+        await sendEmail({
             email: newUser.email,
-            isAdmin: newUser.isAdmin
-        })
-    } catch (error) {
-        res.status(400)
-        throw new Error('Invalid User Data')
-    }
+            subject: 'Verify your email account',
+            message: `${OTP}`
+        });
+
+        res.send(newUser)
+
 });
 
 export const loginUser = asyncHandler(async (req, res) => {
@@ -64,6 +69,55 @@ export const loginUser = asyncHandler(async (req, res) => {
         res.status(401).json({ message: 'User not found'})
     }
 });
+
+export const verifyEmail = asyncHandler(async (req, res) => {
+    const {userId, otp} = req.body
+    if (!userId || !otp.trim()) {
+        throw new Error('Invalid request, missing parameters')
+    }
+
+    if(!isValidObjectId(userId)) {
+        throw new Error('Invalid user')
+    }
+
+    const user = await User.findById(userId)
+    if (!user) {
+        throw new Error('User not found')
+    }
+    if (user.verified) {
+        throw new Error('This User is already verified')
+    }
+
+    const token = await VerifyToken.findOne({owner: user._id})
+    if (!token) {
+        throw new Error('User not found')
+    }
+
+    const isMatched = await token.compareToken(otp)
+    if (!isMatched) {
+        throw new Error('Please provide a valid token')
+    }
+
+    user.verified = true;
+    
+    try {
+        await VerifyToken.findByIdAndDelete(token._id)
+        await user.save()
+
+        await sendEmail({
+            from: 'emailverification@email.com',
+            email: user.email,
+            subject: 'Email verified successfully',
+            message: `Your Email Verified Successfully`
+        });
+
+        res.status(200).json({message: 'Email successfully verified'})
+    } catch (error) {
+        res.status(404)
+        throw new Error('Something went wrong')
+    }
+
+})
 
 export const logoutUser = asyncHandler(async (req, res) => {
     res.cookie('jwt', '', {
@@ -164,7 +218,8 @@ export const forgotPassword = asyncHandler(async(req, res) => {
         res.status(200).json({
             _id: user._id,
             email: user.email,
-            //passwordResetToken: resetToken,
+            username: user.username,
+            passwordResetToken: resetToken,
             passwordResetTokenExpires: user.passwordResetTokenExpires
         })
     } catch (err) {

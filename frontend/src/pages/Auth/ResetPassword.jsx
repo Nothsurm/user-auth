@@ -3,13 +3,13 @@ import { toast } from 'react-toastify'
 import { useSelector, useDispatch } from "react-redux"
 import { useState } from "react"
 import { useResetPasswordMutation } from "../redux/api/usersSlice"
-import { setCredentials } from "../redux/features/auth/authSlice"
 
 export default function ResetPassword() {
     const {resetToken} = useSelector((state => state.auth))
     const { token } = useParams()
 
     const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const [resetPassword, {isLoading}] = useResetPasswordMutation()
 
@@ -18,12 +18,14 @@ export default function ResetPassword() {
 
     const submitHandler = async (e) => {
       e.preventDefault()
+      setLoading(true)
       try {
-        const res = await resetPassword({ password: password, token})
+        const stringifiedPassword = JSON.stringify(password)
+        const res = await resetPassword({ stringifiedPassword, token })
         toast.success('Password successfully reset')
         navigate('/login')
-        console.log(res);
       } catch (err) {
+        setLoading(false)
         console.error(err)
         toast.error('Something went wrong')
       }
@@ -44,8 +46,8 @@ export default function ResetPassword() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="border rounded-lg p-2 mt-2"
             />
-            <button disabled={isLoading} type='submit' className="mt-5 bg-zinc-800 text-white p-2 rounded disabled:opacity-70">
-                {isLoading ? 'Resetting Password...' : 'Reset Password'}
+            <button disabled={loading} type='submit' className="mt-5 bg-zinc-800 text-white p-2 rounded disabled:opacity-70">
+                {loading ? 'Resetting Password...' : 'Reset Password'}
   </button>
               
         </form>
