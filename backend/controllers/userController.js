@@ -203,7 +203,8 @@ export const forgotPassword = asyncHandler(async(req, res) => {
     } 
 
     const resetToken = user.createPasswordResetToken()
-    await user.save({validateBeforeSave: false})
+
+    await user.save()
 
     //send the token back to the user email
     const resetUrl= `${req.protocol}://localhost:5173/resetPassword/${resetToken}`
@@ -217,10 +218,7 @@ export const forgotPassword = asyncHandler(async(req, res) => {
 
         res.status(200).json({
             _id: user._id,
-            email: user.email,
-            username: user.username,
-            passwordResetToken: resetToken,
-            passwordResetTokenExpires: user.passwordResetTokenExpires
+            passwordResetToken: user.passwordResetToken
         })
     } catch (err) {
         user.passwordResetToken = undefined
@@ -232,6 +230,10 @@ export const forgotPassword = asyncHandler(async(req, res) => {
 })
 
 export const resetPassword = asyncHandler(async(req, res) => {
+    if(!req.body.password) {
+        res.status(403)
+        throw new Error('Please enter a password')
+    }
     if (!req.params.token) {
         res.status(403)
         throw new Error('User not found, token expired!')

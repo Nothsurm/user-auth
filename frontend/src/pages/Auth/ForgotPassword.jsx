@@ -11,12 +11,12 @@ export default function ForgotPassword() {
     const navigate = useNavigate()
     const dispatch = useDispatch()
 
-    const [resetPassword, {isLoading}] = useForgotPasswordMutation()
+    const [forgotPassword, {isLoading}] = useForgotPasswordMutation()
 
     const submitHandler = async (e) => {
         e.preventDefault()
         try {
-            const res = await resetPassword({email}).unwrap()
+            const res = await forgotPassword({email}).unwrap()
             dispatch(getPasswordResetToken({...res}))
             toast.success(`An email has been sent, please check your inbox`)
         } catch (err) {

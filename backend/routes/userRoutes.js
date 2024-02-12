@@ -15,6 +15,6 @@ router.delete('/profile/:id',authenticate, deleteUser)
 
 //Forgot Password routes
 router.route('/forgotPassword').post(forgotPassword)
-router.route('/resetPassword/:token').put(resetPassword)
+router.patch('/resetPassword/:token', resetPassword)
 
 export default router;
